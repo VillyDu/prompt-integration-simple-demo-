@@ -1,0 +1,1746 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt - 产品网站Demo</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Custom styles */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* --- New Logged-Out View Styles --- */
+        .new-logged-out-view {
+            background-color: #F7F8FA;
+        }
+        .new-header {
+            background-image: url('https://images.unsplash.com/photo-1475274047050-1d0c0975c63e?q=80&w=2072&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            color: #ffffff;
+        }
+        .new-header h1, .new-header p, .new-header .filter-btn {
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+        .new-header .search-input {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #e5e7eb;
+            color: #1F2937;
+        }
+        .new-header .search-input::placeholder {
+            color: #6b7280;
+        }
+        .new-header .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+        .new-header .filter-btn {
+            color: #e5e7eb;
+            transition: color 0.2s;
+        }
+        .new-header .filter-btn:hover {
+            color: #ffffff;
+        }
+        .content-card {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            border-radius: 0.75rem;
+        }
+        .content-card .tag {
+            background-color: #F3F4F6;
+            color: #4B5563;
+        }
+
+        /* --- Light Theme (Logged-In) Styles --- */
+        .light-theme {
+            background-color: #F7F8FA;
+            color: #1F2937;
+        }
+        .light-theme .nav-item {
+            color: #4B5563;
+            font-weight: 600;
+        }
+        .light-theme .nav-item.active {
+            color: #2563eb;
+            background-color: #EFF6FF;
+        }
+        .light-theme .nav-item:hover {
+            color: #2563eb;
+            background-color: #EFF6FF;
+        }
+        .light-theme .prompt-card {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+        }
+        .light-theme .info-tag {
+            background-color: #F3F4F6;
+            color: #4B5563;
+        }
+        .light-theme .prompt-title {
+            color: #2563eb;
+            font-weight: bold;
+        }
+        .light-theme .action-btn {
+            color: #6b7280;
+        }
+        .light-theme .action-btn:hover {
+            color: #1d4ed8;
+        }
+        .action-btn.active, .action-btn.active i, .action-btn.active svg {
+            color: #2563eb; /* blue-600 */
+        }
+        .action-btn.active i[data-lucide="star"], .action-btn.active .lucide-star {
+            fill: #bfdbfe; /* blue-200 */
+        }
+        .light-theme .hot-tag-link {
+            color: #4B5563;
+        }
+        .light-theme .hot-tag-link:hover {
+            color: #2563eb;
+        }
+        .light-theme .share-prompt-input {
+            background-color: #FFFFFF;
+            border: 1px solid #E5E7EB;
+        }
+        .light-theme .share-prompt-input:focus {
+             border-color: #2563eb;
+             box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+             outline: none;
+        }
+        .tab-item.active {
+            border-bottom-color: #2563eb;
+            color: #2563eb;
+            font-weight: 600;
+        }
+        .hot-tab-item.active {
+            border-bottom-color: #2563eb;
+            color: #2563eb;
+            font-weight: 600;
+        }
+        .folder-item.active {
+            background-color: #EFF6FF;
+            color: #2563eb;
+            font-weight: 600;
+        }
+        
+        /* --- Modal Styles --- */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .modal.hidden {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+        }
+        
+        /* --- Custom Scrollbar --- */
+        .prompt-text-container {
+            max-height: 20rem; /* 320px */
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #a0aec0 #e2e8f0;
+        }
+        .prompt-text-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .prompt-text-container::-webkit-scrollbar-track {
+            background: #edf2f7;
+            border-radius: 10px;
+        }
+        .prompt-text-container::-webkit-scrollbar-thumb {
+            background-color: #a0aec0;
+            border-radius: 10px;
+            border: 2px solid #edf2f7;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="logged-out-view" class="new-logged-out-view">
+        <header class="new-header py-12">
+            <div class="container mx-auto px-4 max-w-7xl">
+                <div class="flex flex-col items-center justify-center mb-8">
+                    <div class="bg-white text-black w-20 h-20 rounded-lg flex items-center justify-center text-5xl font-bold shadow-lg mb-3">P</div>
+                    <h1 class="text-3xl font-bold tracking-wider">PROMPT</h1>
+                    <p class="text-md text-gray-200">PROMPT INTEGRATION</p>
+                </div>
+                <div class="relative max-w-2xl mx-auto">
+                    <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                    <input type="text" placeholder="搜索你感兴趣的 Prompt..." class="search-input w-full pl-12 pr-4 py-3 rounded-full transition-all duration-300">
+                </div>
+                <div class="flex items-center justify-center space-x-8 mt-8">
+                    <button class="filter-btn flex items-center space-x-2"><i data-lucide="user-circle-2"></i><span>昵称</span></button>
+                    <button class="filter-btn flex items-center space-x-2"><i data-lucide="tags"></i><span>标签</span></button>
+                    <button class="filter-btn flex items-center space-x-2"><i data-lucide="layout-grid"></i><span>场景</span></button>
+                    <button class="filter-btn flex items-center space-x-2"><i data-lucide="brain-circuit"></i><span>大模型</span></button>
+                </div>
+            </div>
+        </header>
+        <main class="container mx-auto px-4 py-8 max-w-7xl">
+            <div class="grid grid-cols-12 gap-8">
+                <aside class="col-span-12 lg:col-span-2">
+                    <div class="content-card p-4">
+                        <h2 class="text-lg font-semibold mb-4 flex items-center text-gray-800"><i data-lucide="link" class="mr-2"></i>直达大模型</h2>
+                        <div id="llm-links-logged-out" class="space-y-2">
+                            <!-- LLM links will be populated by JS -->
+                        </div>
+                    </div>
+                </aside>
+                <div class="col-span-12 lg:col-span-7 space-y-6">
+                    <div class="content-card p-6" data-prompt-id="2">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-3"><img src="https://placehold.co/48x48/f97316/ffffff?text=噜" alt="User Avatar" class="w-12 h-12 rounded-full"><div><p class="font-semibold text-gray-800">噜啦噜啦嘞噜啦噜啦嘞</p><span class="text-xs bg-yellow-500 text-black font-bold px-2 py-0.5 rounded">LEVEL 8</span></div></div>
+                            <button class="text-gray-500 hover:text-gray-800"><i data-lucide="more-horizontal"></i></button>
+                        </div>
+                        <div class="mb-4"><p class="text-sm text-gray-500 mb-1"><span class="font-semibold">场景:</span> 学术论文</p><div class="flex flex-wrap gap-2"><span class="tag px-3 py-1 text-sm rounded-full">#渐进式阅读</span><span class="tag px-3 py-1 text-sm rounded-full">#论文阅读</span><span class="tag px-3 py-1 text-sm rounded-full">#大学生</span><span class="tag px-3 py-1 text-sm rounded-full">#科研</span></div></div>
+                        <div><h3 class="text-lg font-bold text-blue-600 mb-2">PROMPT</h3><div class="prompt-text-container bg-gray-50 p-4 rounded-lg"><p class="text-gray-700 leading-relaxed whitespace-pre-wrap">让我们一步一步思考，阅读我提供的内容，并做出以下操作：
+第一步，提取文章的元数据
+- 标题：
+- 作者：
+- 标签: (阅读文章内容后给文章打上标签，标签通常是领域、学科或专有名词)
+第二步，一句话总结这篇文章；
+第三步，总结文章内容的核心要点；</p></div></div>
+                        <div class="border-t border-gray-200 mt-6 pt-4 flex justify-between items-center text-gray-500">
+                            <div class="flex space-x-6">
+                                <button class="action-btn flex items-center space-x-1 hover:text-blue-600"><i data-lucide="thumbs-up" class="w-4 h-4"></i> <span>540</span></button>
+                                <button class="action-btn flex items-center space-x-1 hover:text-blue-600"><i data-lucide="message-square" class="w-4 h-4"></i> <span>1987</span></button>
+                                <button class="action-btn flex items-center space-x-1 hover:text-blue-600"><i data-lucide="star" class="w-4 h-4"></i> <span>703</span></button>
+                            </div>
+                            <button class="redirect-btn action-btn flex items-center space-x-1"><i data-lucide="external-link" class="w-4 h-4"></i> <span>跳转</span></button>
+                        </div>
+                    </div>
+                </div>
+                <aside class="col-span-12 lg:col-span-3 space-y-8">
+                    <div class="content-card p-6 text-center">
+                        <img src="https://placehold.co/100x100/ffffff/a7c7e7?text=Hi" alt="Assistant Mascot" class="w-24 h-24 mx-auto rounded-full mb-4 -mt-20 border-4 border-white shadow-lg">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">登录使用小助手</h3>
+                        <p class="text-sm text-gray-500 mb-4">优化、分析、创作你的专属Prompt。</p>
+                        <button id="open-login-modal-button" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">立即登录</button>
+                    </div>
+                    <div class="content-card p-6">
+                        <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-semibold text-gray-800">热门标签</h3><button class="text-sm text-blue-600 hover:text-blue-500 flex items-center space-x-1"><i data-lucide="refresh-cw" class="w-4 h-4"></i><span>点击刷新</span></button></div>
+                        <ul id="hot-tags-list" class="space-y-3">
+                            </ul>
+                    </div>
+                </aside>
+            </div>
+        </main>
+    </div>
+
+    <div id="logged-in-view" class="light-theme hidden min-h-screen">
+        <div class="container mx-auto max-w-screen-xl p-4">
+            <div class="grid grid-cols-12 gap-6">
+                <aside class="col-span-12 lg:col-span-2">
+                    <div class="p-4 bg-white rounded-xl shadow-sm h-full flex flex-col">
+                        <div class="flex items-center mb-8">
+                            <div class="bg-blue-600 text-white w-10 h-10 rounded-lg flex items-center justify-center text-2xl font-bold">P</div>
+                            <h1 class="text-xl font-bold ml-3 text-gray-800">PROMPT</h1>
+                        </div>
+                        <nav id="main-nav" class="space-y-2 flex-grow">
+                            <a href="#" id="nav-home" class="nav-item flex items-center p-3 rounded-lg active"><i data-lucide="home" class="w-5 h-5 mr-3"></i><span>首页</span></a>
+                            <a href="#" id="nav-follows" class="nav-item flex items-center p-3 rounded-lg"><i data-lucide="heart" class="w-5 h-5 mr-3"></i><span>我的关注</span></a>
+                            <a href="#" id="nav-favorites" class="nav-item flex items-center p-3 rounded-lg"><i data-lucide="star" class="w-5 h-5 mr-3"></i><span>我的收藏</span></a>
+                            <a href="#" id="nav-mcoins" class="nav-item flex items-center p-3 rounded-lg"><i data-lucide="gem" class="w-5 h-5 mr-3"></i><span>我的M币</span></a>
+                            <a href="#" id="nav-hot-prompts" class="nav-item flex items-center p-3 rounded-lg"><i data-lucide="flame" class="w-5 h-5 mr-3"></i><span>热门PROMPT</span></a>
+                            <a href="#" id="nav-scenarios" class="nav-item flex items-center p-3 rounded-lg"><i data-lucide="layout-dashboard" class="w-5 h-5 mr-3"></i><span>常见场景</span></a>
+                        </nav>
+                    </div>
+                </aside>
+
+                <div id="main-content-area" class="col-span-12 lg:col-span-10">
+                    <div id="home-content-view" class="grid grid-cols-10 gap-6">
+                        <main class="col-span-10 lg:col-span-7 space-y-6">
+                            <div class="prompt-card p-4 rounded-xl">
+                                <input type="text" placeholder="快来分享你的PROMPT吧!" class="w-full share-prompt-input rounded-lg px-4 py-3 transition">
+                                <div class="flex justify-end items-center mt-3 space-x-2">
+                                    <button class="info-tag px-3 py-1.5 rounded-md text-sm font-semibold hover:bg-gray-300">场景</button>
+                                    <button class="info-tag px-3 py-1.5 rounded-md text-sm font-semibold hover:bg-gray-300">标签</button>
+                                    <button class="info-tag px-3 py-1.5 rounded-md text-sm font-semibold hover:bg-gray-300">PROMPT</button>
+                                    <button class="info-tag px-3 py-1.5 rounded-md text-sm font-semibold hover:bg-gray-300">效果</button>
+                                    <button class="bg-blue-500 text-white px-4 py-1.5 rounded-md text-sm font-semibold hover:bg-blue-600"><i data-lucide="send" class="w-4 h-4"></i></button>
+                                </div>
+                            </div>
+                            <div class="prompt-card rounded-xl p-6" data-prompt-id="4">
+                                <div class="flex items-center mb-4">
+                                    <img src="https://placehold.co/48x48/f97316/ffffff?text=菠" alt="User Avatar" class="w-12 h-12 rounded-full">
+                                    <div class="ml-3">
+                                        <p class="font-semibold text-gray-800">菠萝菠萝蜜菠萝菠萝蜜</p>
+                                        <span class="text-xs bg-yellow-400 text-gray-800 font-bold px-2 py-0.5 rounded">LEVEL 8</span>
+                                    </div>
+                                </div>
+                                <div class="space-y-3 mb-4 text-sm">
+                                    <div class="flex items-center"><span class="font-semibold w-16 inline-block text-gray-500">场景</span> <span class="info-tag px-3 py-1 rounded-full">学术论文</span></div>
+                                    <div class="flex items-center"><span class="font-semibold w-16 inline-block text-gray-500">标签</span> <span class="info-tag px-3 py-1 rounded-full">#论文摘要</span></div>
+                                </div>
+                                <div class="mb-4">
+                                    <h3 class="text-lg mb-2 prompt-title">PROMPT</h3>
+                                    <div class="prompt-text-container bg-gray-50 p-4 rounded-lg">
+                                        <p class="text-gray-600 leading-relaxed whitespace-pre-wrap">作为某领域的专家，为特定主题的研究论文写摘要，摘要应概括研究的主要目标、方法、关键发现和研究意义。</p>
+                                        <p class="text-gray-500 leading-relaxed mt-2 text-sm whitespace-pre-wrap">AS AN EXPERT IN THE FIELD, WRITE AN ABSTRACT FOR A RESEARCH PAPER ON A SPECIFIC TOPIC, SUMMARIZING THE MAIN OBJECTIVES, METHODS, KEY FINDINGS, AND SIGNIFICANCE OF THE RESEARCH.</p>
+                                    </div>
+                                </div>
+                                 <div class="mb-4">
+                                    <h3 class="text-lg mb-2 prompt-title">效果</h3>
+                                    <div class="border rounded-lg p-2">
+                                        <img src="https://placehold.co/600x150/eeeeee/999999?text=效果截图示例" onerror="this.onerror=null;this.src='https://placehold.co/600x150/eeeeee/999999?text=Image+Not+Found';" alt="效果截图" class="rounded-md w-full">
+                                    </div>
+                                </div>
+                                <div class="border-t mt-6 pt-4 flex justify-between items-center text-gray-500">
+                                    <div class="flex space-x-5">
+                                        <button class="action-btn flex items-center space-x-1"><i data-lucide="thumbs-up" class="w-5 h-5"></i> <span>540</span></button>
+                                        <button class="action-btn flex items-center space-x-1"><i data-lucide="message-square" class="w-5 h-5"></i> <span>1987</span></button>
+                                        <button class="action-btn flex items-center space-x-1"><i data-lucide="star" class="w-5 h-5"></i> <span>703</span></button>
+                                        <button class="action-btn flex items-center space-x-1"><i data-lucide="eye" class="w-5 h-5"></i> <span>83</span></button>
+                                        <button class="action-btn flex items-center space-x-1"><i data-lucide="download" class="w-5 h-5"></i> <span>19</span></button>
+                                        <button class="action-btn flex items-center space-x-1 tip-btn" data-creator="菠萝菠萝蜜菠萝菠萝蜜"><i data-lucide="gem" class="w-5 h-5"></i> <span>400</span></button>
+                                    </div>
+                                    <button class="redirect-btn action-btn flex items-center space-x-1"><i data-lucide="external-link" class="w-5 h-5"></i><span>跳转</span></button>
+                                </div>
+                            </div>
+                        </main>
+                        <aside class="col-span-10 lg:col-span-3">
+                            <div class="bg-white rounded-xl shadow-sm h-full flex flex-col">
+                                <div class="p-4 flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <img src="https://placehold.co/48x48/f97316/ffffff?text=菠" alt="User Avatar" class="w-12 h-12 rounded-full">
+                                        <div class="ml-3">
+                                            <p class="font-semibold text-gray-800">菠萝菠萝蜜菠萝菠萝蜜</p>
+                                            <a href="#" class="text-sm text-blue-600 hover:underline">个人中心</a>
+                                        </div>
+                                    </div>
+                                    <i data-lucide="chevron-right" class="text-gray-400"></i>
+                                </div>
+
+                                <div class="p-6 border-t border-gray-100">
+                                    <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-semibold text-gray-800">热门标签</h3><button class="text-sm text-blue-600 hover:text-blue-500 flex items-center space-x-1"><i data-lucide="refresh-cw" class="w-4 h-4"></i><span>点击刷新</span></button></div>
+                                    <ul id="hot-tags-list-main" class="space-y-3">
+                                        </ul>
+                                </div>
+
+                                <div class="p-6 border-t border-gray-100 text-center">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png" alt="Assistant Mascot" class="w-20 h-20 mx-auto rounded-full mb-4">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-2">你的小助手</h3>
+                                    <div class="bg-gray-100 p-4 rounded-lg">
+                                        <div class="flex items-start text-left">
+                                            <img src="https://placehold.co/32x32/f97316/ffffff?text=菠" alt="User Avatar" class="w-8 h-8 rounded-full mr-3">
+                                            <p class="text-sm text-gray-700 bg-white p-3 rounded-lg shadow-sm">请帮我优化论文标题</p>
+                                        </div>
+                                    </div>
+                                    <div class="relative mt-4">
+                                        <input type="text" placeholder="输入你的问题..." class="w-full bg-gray-100 border-none rounded-lg pl-4 pr-10 py-2 focus:ring-2 focus:ring-blue-500">
+                                        <button class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-blue-600">
+                                            <i data-lucide="send" class="w-5 h-5"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
+
+                    <div id="my-follows-view" class="hidden">
+                        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h2 class="text-xl font-bold text-gray-800">我的关注</h2>
+                                <a href="#" id="view-all-follows-link" class="text-sm text-blue-600 hover:underline">查看全部</a>
+                            </div>
+                            <div id="followed-users-preview-list" class="flex space-x-6 overflow-x-auto pb-4">
+                                </div>
+                        </div>
+                        <div class="space-y-6">
+                            <h3 class="text-xl font-bold text-gray-800">关注动态</h3>
+                             <div class="prompt-card rounded-xl p-6" data-prompt-id="3">
+                                <div class="flex items-center mb-4">
+                                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1887&auto=format&fit=crop" alt="User Avatar Rina" class="w-12 h-12 rounded-full object-cover">
+                                    <div class="ml-3">
+                                        <p class="font-semibold text-gray-800">Rina</p>
+                                        <span class="text-xs bg-green-500 text-white font-bold px-2 py-0.5 rounded">LEVEL 5</span>
+                                    </div>
+                                </div>
+                                <div class="space-y-3 mb-4 text-sm">
+                                    <div class="flex items-center"><span class="font-semibold w-16 inline-block text-gray-500">场景</span> <span class="info-tag px-3 py-1 rounded-full">社交媒体</span></div>
+                                    <div class="flex items-center"><span class="font-semibold w-16 inline-block text-gray-500">标签</span> <span class="info-tag px-3 py-1 rounded-full">#小红书</span></div>
+                                </div>
+                                <div class="mb-4">
+                                    <h3 class="text-lg mb-2 prompt-title">PROMPT</h3>
+                                    <div class="prompt-text-container bg-gray-50 p-4 rounded-lg"><p class="text-gray-600 leading-relaxed whitespace-pre-wrap">帮我生成一篇关于夏天去海边旅行的小红书文案，需要包含表情符号，并提及防晒的重要性。</p></div>
+                                </div>
+                                <div class="border-t mt-6 pt-4 flex justify-between items-center text-gray-500">
+                                    <div class="flex space-x-5">
+                                        <button class="action-btn flex items-center space-x-1"><i data-lucide="thumbs-up" class="w-5 h-5"></i> <span>1.2k</span></button>
+                                        <button class="action-btn flex items-center space-x-1"><i data-lucide="message-square" class="w-5 h-5"></i> <span>345</span></button>
+                                        <button class="action-btn flex items-center space-x-1"><i data-lucide="star" class="w-5 h-5"></i> <span>802</span></button>
+                                        <button class="action-btn flex items-center space-x-1 tip-btn" data-creator="Rina"><i data-lucide="gem" class="w-5 h-5"></i> <span>150</span></button>
+                                    </div>
+                                    <button class="redirect-btn action-btn flex items-center space-x-1"><i data-lucide="external-link" class="w-5 h-5"></i><span>跳转</span></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="my-mcoins-view" class="hidden">
+                        <div class="space-y-6">
+                            <div class="bg-white rounded-xl shadow-sm p-8 text-center">
+                                <p class="text-sm text-gray-500 mb-2">我的M币余额</p>
+                                <div class="flex items-center justify-center space-x-2">
+                                    <i data-lucide="gem" class="w-8 h-8 text-blue-500"></i>
+                                    <p id="mcoin-balance" class="text-4xl font-bold text-gray-800">5,888</p>
+                                </div>
+                                <p class="text-sm text-gray-400 mt-1">≈ ￥588.8</p>
+                                <div class="flex justify-center space-x-4 mt-6">
+                                    <button id="recharge-btn" class="bg-blue-600 text-white font-semibold px-8 py-2 rounded-lg hover:bg-blue-700 transition-colors">充值</button>
+                                    <button id="withdraw-btn" class="bg-gray-200 text-gray-700 font-semibold px-8 py-2 rounded-lg hover:bg-gray-300 transition-colors">提现</button>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-xl shadow-sm">
+                                <div class="p-4 border-b">
+                                    <h3 class="text-lg font-semibold">交易记录</h3>
+                                    <div id="transaction-tabs" class="flex space-x-6 mt-2 border-b">
+                                        <button class="tab-item py-2 px-1 text-gray-500 border-b-2 border-transparent active" data-filter="all">全部</button>
+                                        <button class="tab-item py-2 px-1 text-gray-500 border-b-2 border-transparent" data-filter="income">收入</button>
+                                        <button class="tab-item py-2 px-1 text-gray-500 border-b-2 border-transparent" data-filter="expense">支出</button>
+                                        <button class="tab-item py-2 px-1 text-gray-500 border-b-2 border-transparent" data-filter="system">充值/提现</button>
+                                    </div>
+                                </div>
+                                <div id="transaction-list" class="p-4 space-y-1">
+                                    </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="my-favorites-view" class="hidden grid grid-cols-12 gap-6">
+                        <aside class="col-span-12 lg:col-span-3">
+                           <div class="bg-white rounded-xl shadow-sm p-4">
+                                <h3 class="text-lg font-semibold mb-4">我的收藏夹</h3>
+                                <div id="favorite-folders-list" class="space-y-1">
+                                    </div>
+                                <button id="create-folder-btn" class="w-full mt-4 bg-blue-100 text-blue-700 font-semibold px-4 py-2 rounded-lg hover:bg-blue-200 transition-colors flex items-center justify-center space-x-2">
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                    <span>创建新收藏夹</span>
+                                </button>
+                           </div>
+                        </aside>
+                        <main class="col-span-12 lg:col-span-9 space-y-6">
+                            <h2 id="favorites-title" class="text-2xl font-bold text-gray-800"></h2>
+                            <div id="favorites-prompt-list" class="space-y-6">
+                                </div>
+                        </main>
+                    </div>
+                    
+                    <div id="hot-prompts-view" class="hidden">
+                        <div class="bg-white rounded-xl shadow-sm p-6">
+                            <h2 class="text-2xl font-bold text-gray-800">热门PROMPT榜</h2>
+                            <p class="text-gray-500 mt-1">发现社区中最受欢迎和最有价值的Prompt</p>
+                            <div id="hot-prompts-tabs" class="flex space-x-2 mt-4 border-b">
+                                <button class="hot-tab-item py-2 px-4 text-gray-500 border-b-2 border-transparent active" data-period="today">今日热门</button>
+                                <button class="hot-tab-item py-2 px-4 text-gray-500 border-b-2 border-transparent" data-period="week">本周热门</button>
+                                <button class="hot-tab-item py-2 px-4 text-gray-500 border-b-2 border-transparent" data-period="all">总榜</button>
+                            </div>
+                        </div>
+                        <div id="hot-prompt-list" class="mt-6 space-y-4">
+                            </div>
+                    </div>
+
+                    <div id="common-scenarios-view" class="hidden">
+                         <div class="space-y-8">
+                               </div>
+                    </div>
+
+
+                    <div id="tag-detail-view" class="hidden space-y-6">
+                        <div class="bg-white rounded-xl shadow-sm p-6">
+                            <h2 id="tag-detail-title" class="text-3xl font-bold text-gray-800"></h2>
+                            <p id="tag-detail-desc" class="mt-2 text-gray-500"></p>
+                            <button class="mt-4 bg-blue-100 text-blue-700 font-semibold px-4 py-2 rounded-lg hover:bg-blue-200 transition-colors flex items-center space-x-2">
+                                <i data-lucide="share-2" class="w-4 h-4"></i>
+                                <span>分享我的Prompt</span>
+                            </button>
+                        </div>
+                        <div class="flex justify-end">
+                             <div class="flex space-x-1 rounded-lg bg-gray-200 p-1">
+                                <button class="sort-btn active bg-white text-gray-800 shadow rounded-md px-3 py-1 text-sm font-semibold" data-sort="hot">最热门</button>
+                                <button class="sort-btn text-gray-600 px-3 py-1 text-sm font-semibold" data-sort="new">最新发布</button>
+                            </div>
+                        </div>
+                        <div id="tag-prompt-list" class="space-y-6">
+                            </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="login-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center">
+        <div id="login-modal-backdrop" class="modal-backdrop fixed inset-0"></div>
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm m-4 p-8 z-10">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">手机号登录</h2>
+                <button id="close-login-modal-button" class="text-gray-500 hover:text-gray-800">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <form id="login-form">
+                <div class="mb-4">
+                    <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">手机号</label>
+                    <input type="tel" id="phone" name="phone" placeholder="请输入您的手机号" class="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-800">
+                </div>
+                <div class="mb-6">
+                     <label for="code" class="block text-sm font-medium text-gray-700 mb-1">验证码</label>
+                    <div class="flex space-x-2">
+                        <input type="text" id="code" name="code" placeholder="请输入验证码" class="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-800">
+                        <button type="button" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-semibold whitespace-nowrap hover:bg-gray-300">获取验证码</button>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                    登录
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <div id="all-follows-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div id="all-follows-backdrop" class="modal-backdrop fixed inset-0"></div>
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg m-4 z-10 flex flex-col" style="max-height: 90vh;">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h2 class="text-xl font-bold text-gray-800">全部关注</h2>
+                <button id="close-all-follows-modal" class="text-gray-500 hover:text-gray-800">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div class="p-4">
+                <div class="relative">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                    <input type="text" id="follow-search-input" placeholder="搜索用户..." class="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                </div>
+            </div>
+            <div id="all-follows-list" class="flex-grow overflow-y-auto px-4 pb-4">
+                </div>
+        </div>
+    </div>
+
+    <div id="unfollow-confirm-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div id="unfollow-confirm-backdrop" class="modal-backdrop fixed inset-0"></div>
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm m-4 p-6 z-10 text-center">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">确认不再关注？</h3>
+            <div class="flex justify-center space-x-4">
+                <button id="confirm-unfollow-btn" class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">确认</button>
+                <button id="cancel-unfollow-btn" class="px-6 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="tip-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div id="tip-modal-backdrop" class="modal-backdrop fixed inset-0"></div>
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm m-4 p-6 z-10">
+            <h3 class="text-lg font-semibold text-center text-gray-800 mb-4">打赏给 <span id="tip-recipient-name" class="text-blue-600"></span></h3>
+            <div class="space-y-4">
+                <div class="grid grid-cols-3 gap-4">
+                    <button class="tip-amount-btn border py-2 rounded-lg hover:bg-blue-50 hover:border-blue-500" data-amount="10">10 M币</button>
+                    <button class="tip-amount-btn border py-2 rounded-lg hover:bg-blue-50 hover:border-blue-500" data-amount="50">50 M币</button>
+                    <button class="tip-amount-btn border py-2 rounded-lg hover:bg-blue-50 hover:border-blue-500" data-amount="100">100 M币</button>
+                </div>
+                <input id="custom-tip-input" type="number" placeholder="自定义金额" class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                <p class="text-xs text-center text-gray-400">你的余额: <span id="tip-modal-balance">0</span> M币</p>
+                <button id="confirm-tip-btn" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400">确认打赏</button>
+                <button id="cancel-tip-btn" class="w-full text-center mt-2 text-sm text-gray-500 hover:text-gray-700">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="create-folder-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div id="create-folder-backdrop" class="modal-backdrop fixed inset-0"></div>
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md m-4 p-6 z-10">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">创建新收藏夹</h3>
+            <form id="create-folder-form">
+                <input id="folder-name-input" type="text" placeholder="收藏夹名称" class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 mb-4" required>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancel-create-folder-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">取消</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">创建</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+     <div id="remove-favorite-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div id="remove-favorite-backdrop" class="modal-backdrop fixed inset-0"></div>
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm m-4 p-6 z-10 text-center">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">确认取消收藏？</h3>
+            <div class="flex justify-center space-x-4">
+                <button id="confirm-remove-favorite-btn" class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">确认</button>
+                <button id="cancel-remove-favorite-btn" class="px-6 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300">取消</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="comment-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div id="comment-modal-backdrop" class="modal-backdrop fixed inset-0"></div>
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md m-4 p-6 z-10">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">发表评论</h3>
+            <form id="comment-form">
+                <textarea id="comment-input" placeholder="写下你的评论..." class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 mb-4" rows="4" required></textarea>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancel-comment-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">取消</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">发表</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="recharge-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div id="recharge-modal-backdrop" class="modal-backdrop fixed inset-0"></div>
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md m-4 p-6 z-10">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-semibold text-gray-800">M币充值</h3>
+                <button id="close-recharge-modal" class="text-gray-500 hover:text-gray-800">&times;</button>
+            </div>
+            <div class="space-y-4">
+                <p class="text-sm font-semibold text-gray-600">选择充值金额</p>
+                <div class="grid grid-cols-3 gap-4">
+                    <button class="recharge-amount-btn border py-3 rounded-lg hover:bg-blue-50 hover:border-blue-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-200" data-amount="50">50 M币</button>
+                    <button class="recharge-amount-btn border py-3 rounded-lg hover:bg-blue-50 hover:border-blue-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-200" data-amount="100">100 M币</button>
+                    <button class="recharge-amount-btn border py-3 rounded-lg hover:bg-blue-50 hover:border-blue-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-200" data-amount="300">300 M币</button>
+                    <button class="recharge-amount-btn border py-3 rounded-lg hover:bg-blue-50 hover:border-blue-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-200" data-amount="500">500 M币</button>
+                </div>
+                <input id="custom-recharge-input" type="number" placeholder="或输入自定义金额" class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                <p class="text-sm font-semibold text-gray-600">选择支付方式</p>
+                <div class="space-y-2">
+                     <button class="w-full flex items-center justify-between p-3 border rounded-lg hover:border-blue-500"><span><i class="inline-block w-6 h-6 mr-2 bg-blue-500 rounded-full"></i>支付宝</span><i data-lucide="check-circle" class="text-blue-500"></i></button>
+                     <button class="w-full flex items-center justify-between p-3 border rounded-lg hover:border-blue-500"><span><i class="inline-block w-6 h-6 mr-2 bg-green-500 rounded-full"></i>微信支付</span></button>
+                </div>
+                <button id="confirm-recharge-btn" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition-colors">确认支付</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="withdraw-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div id="withdraw-modal-backdrop" class="modal-backdrop fixed inset-0"></div>
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md m-4 p-6 z-10">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-semibold text-gray-800">M币提现</h3>
+                <button id="close-withdraw-modal" class="text-gray-500 hover:text-gray-800">&times;</button>
+            </div>
+            <div class="space-y-4">
+                 <div>
+                    <label for="withdraw-amount-input" class="block text-sm font-medium text-gray-700">提现金额</label>
+                    <div class="mt-1 relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="gem" class="h-5 w-5 text-gray-400"></i>
+                        </div>
+                        <input type="number" id="withdraw-amount-input" class="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 pr-12 sm:text-sm border-gray-300 rounded-md" placeholder="0.00">
+                        <div class="absolute inset-y-0 right-0 flex items-center">
+                            <button id="withdraw-all-btn" class="text-blue-600 hover:text-blue-800 h-full px-4">全部提现</button>
+                        </div>
+                    </div>
+                    <p class="mt-2 text-sm text-gray-500">当前可提现余额: <span id="withdrawable-balance" class="font-medium">0</span> M币</p>
+                </div>
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                             <i data-lucide="alert-triangle" class="h-5 w-5 text-yellow-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-yellow-700">提现将收取2%的手续费，预计1-3个工作日到账。</p>
+                        </div>
+                    </div>
+                </div>
+                <button id="confirm-withdraw-btn" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition-colors">确认提现</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="add-to-favorites-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div id="add-to-favorites-backdrop" class="modal-backdrop fixed inset-0"></div>
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md m-4 p-6 z-10">
+            <div class="flex justify-between items-center mb-4">
+                 <h3 class="text-lg font-semibold text-gray-800">添加到收藏夹</h3>
+                 <button id="close-add-to-favorites-modal" class="text-gray-400 hover:text-gray-700">
+                     <i data-lucide="x" class="w-5 h-5"></i>
+                 </button>
+            </div>
+            <div id="favorite-folders-selection-list" class="space-y-2 mb-4 max-h-48 overflow-y-auto">
+                <!-- Folder list will be dynamically populated here -->
+            </div>
+            <div id="create-new-folder-in-modal-container">
+                 <div class="flex space-x-2">
+                    <input id="new-folder-name-modal-input" type="text" placeholder="创建新收藏夹..." class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                    <button id="create-folder-in-modal-btn" class="bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap">创建并收藏</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="redirect-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div id="redirect-modal-backdrop" class="modal-backdrop fixed inset-0"></div>
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md m-4 p-6 z-10">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-semibold text-gray-800">跳转到大模型</h3>
+                <button id="close-redirect-modal" class="text-gray-500 hover:text-gray-800">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <p class="text-sm text-gray-500 mb-4">Prompt将自动复制到剪贴板，点击下方按钮跳转。</p>
+            <div id="redirect-llm-list" class="space-y-2">
+                <!-- LLM redirect links will be populated by JS -->
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script>
+        window.onload = () => {
+            lucide.createIcons();
+
+            // --- Helper Functions ---
+            const formatDate = (date) => date.toISOString().split('T')[0];
+
+            // --- Data ---
+            const llmData = [
+                { name: 'ChatGPT', url: 'https://chat.openai.com/', logo: 'https://placehold.co/40x40/74aa9c/ffffff?text=G' },
+                { name: '元宝', url: 'https://yuanbao.tencent.com/', logo: 'https://placehold.co/40x40/f59e0b/ffffff?text=元' },
+                { name: 'Kimi', url: 'https://kimi.moonshot.cn/', logo: 'https://placehold.co/40x40/000000/ffffff?text=K' },
+                { name: '豆包', url: 'https://www.doubao.com/', logo: 'https://placehold.co/40x40/4285F4/ffffff?text=豆' },
+                { name: 'Gemini', url: 'https://gemini.google.com/', logo: 'https://placehold.co/40x40/8ab4f8/ffffff?text=G' },
+                { name: 'DeepSeek', url: 'https://www.deepseek.com/', logo: 'https://avatars.githubusercontent.com/u/148858308?s=200&v=4' },
+                { name: 'Claude', url: 'https://claude.ai/', logo: 'https://placehold.co/40x40/d97706/ffffff?text=C' }
+            ];
+            let currentUser = {
+                balance: 5888,
+                transactions: [
+                    { type: 'income', from: 'Miko的打赏', amount: 100, date: '2024-07-08 10:00' },
+                    { type: 'expense', to: '打赏给Sora', amount: 50, date: '2024-07-07 15:30' },
+                    { type: 'system', description: '系统充值', amount: 1000, date: '2024-07-06 12:00' },
+                    { type: 'income', from: 'Zara的打赏', amount: 20, date: '2024-07-05 20:15' },
+                ]
+            };
+            let allFollowedUsers = [
+                { id: 1, name: 'Miko', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop', bio: 'AI领域专家', level: 'LEVEL 9', levelClass: 'bg-indigo-500 text-white' },
+                { id: 2, name: 'Rina', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1887&auto=format&fit=crop', bio: '创意写作大神', level: 'LEVEL 5', levelClass: 'bg-green-500 text-white' },
+                { id: 3, name: 'Sora', avatar: 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?q=80&w=1780&auto=format&fit=crop', bio: '视频脚本创作者', level: 'LEVEL 6', levelClass: 'bg-pink-500 text-white' },
+                { id: 4, name: 'Niko', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1887&auto=format&fit=crop', bio: '擅长代码生成', level: 'LEVEL 8', levelClass: 'bg-yellow-500 text-black' },
+                { id: 5, name: 'Tali', avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=1961&auto=format&fit=crop', bio: '营销文案专家', level: 'LEVEL 7', levelClass: 'bg-purple-500 text-white' },
+                { id: 6, name: 'Yumi', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1964&auto=format&fit=crop', bio: '小红书爆款写手', level: 'LEVEL 9', levelClass: 'bg-indigo-500 text-white' },
+                { id: 7, name: 'Kiko', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1887&auto=format&fit=crop', bio: 'Prompt工程师', level: 'LEVEL 8', levelClass: 'bg-yellow-500 text-black' },
+                { id: 8, name: 'Mina', avatar: 'https://images.unsplash.com/photo-1521119989659-a83eee488004?q=80&w=1923&auto=format&fit=crop', bio: '学术论文助手', level: 'LEVEL 6', levelClass: 'bg-pink-500 text-white' },
+                { id: 9, name: 'Zara', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1888&auto=format&fit=crop', bio: '生活方式分享家', level: 'LEVEL 7', levelClass: 'bg-purple-500 text-white' },
+                { id: 10, name: '菠萝菠萝蜜菠萝菠萝蜜', avatar: 'https://placehold.co/48x48/f97316/ffffff?text=菠', bio: '资深用户', level: 'LEVEL 8', levelClass: 'bg-yellow-500 text-black' },
+                { id: 11, name: '官方', avatar: 'https://placehold.co/48x48/cccccc/ffffff?text=P', bio: '平台认证', level: '认证作者', levelClass: 'bg-blue-500 text-white' },
+            ];
+            
+            // --- MODIFICATION: Updated prompt data for new hot list logic ---
+            const today = new Date();
+            const yesterday = new Date(); yesterday.setDate(today.getDate() - 1);
+            const threeDaysAgo = new Date(); threeDaysAgo.setDate(today.getDate() - 3);
+            const tenDaysAgo = new Date(); tenDaysAgo.setDate(today.getDate() - 10);
+
+            const allPromptsData = [
+                { id: 1, prompt: "对[具体学术主题]进行深入研究，并将关键发现和理论整合成一篇全面的文献综述。", source: "VVVVVilly", likes: 1200, comments: 450, stars: 800, tips: 250, creator: "Miko", hotness: 9850, lastActivityDate: formatDate(threeDaysAgo) },
+                { id: 2, prompt: "让我们一步一步思考，阅读我提供的内容，并做出以下操作：第一步，提取文章的元数据...", source: "VVVVVilly", likes: 2500, comments: 980, stars: 1500, tips: 300, creator: "Rina", hotness: 15200, lastActivityDate: formatDate(tenDaysAgo) },
+                { id: 3, prompt: "你是一个小红书文案专家，也被称为小红书浓人。请根据我提供的主题，帮我创作小红书标题和文案。", source: "VVVVVilly", likes: 3200, comments: 1200, stars: 2200, tips: 500, creator: "Yumi", hotness: 18500, lastActivityDate: formatDate(today) },
+                { id: 4, prompt: "作为某领域的专家，为特定主题的研究论文写摘要，摘要应概括研究的主要目标、方法、关键发现和研究意义。", source: "用户创作", likes: 540, comments: 1987, stars: 703, tips: 400, creator: "菠萝菠萝蜜菠萝菠萝蜜", hotness: 8800, lastActivityDate: formatDate(yesterday) },
+                { id: 5, prompt: `你是一位资深的周报撰写专家...`, source: "官方模板", likes: 5500, comments: 1500, stars: 3000, tips: 1200, creator: "官方", hotness: 25000, lastActivityDate: formatDate(today) },
+                { id: 6, prompt: `- Role: 资深商务沟通顾问和文案策划专家...`, source: "官方模板", likes: 4800, comments: 1300, stars: 2500, tips: 980, creator: "官方", hotness: 22000, lastActivityDate: formatDate(threeDaysAgo) },
+                { id: 7, prompt: `- Role: 资深行政助理和会议记录专家...`, source: "官方模板", likes: 4500, comments: 1100, stars: 2300, tips: 800, creator: "官方", hotness: 21000, lastActivityDate: formatDate(yesterday) },
+                { id: 8, prompt: `- Role: 述职报告撰写专家...`, source: "官方模板", likes: 4200, comments: 1000, stars: 2100, tips: 750, creator: "官方", hotness: 20000, lastActivityDate: formatDate(tenDaysAgo) },
+                { id: 9, prompt: `- Role: 论文写作助手...`, source: "官方模板", likes: 6200, comments: 1800, stars: 3500, tips: 1500, creator: "官方", hotness: 28000, lastActivityDate: formatDate(today) },
+                { id: 10, prompt: `- Role: 多语习得策略架构师与跨文化沟通导师...`, source: "官方模板", likes: 7500, comments: 2100, stars: 4000, tips: 1800, creator: "官方", hotness: 32000, lastActivityDate: formatDate(threeDaysAgo) },
+                { id: 11, prompt: `- Role: 博闻强识的百科全知者...`, source: "官方模板", likes: 8200, comments: 2500, stars: 4500, tips: 2000, creator: "官方", hotness: 35000, lastActivityDate: formatDate(yesterday) },
+                { id: 12, prompt: `- Role: 全栈代码架构师与编程导师...`, source: "官方模板", likes: 9999, comments: 3000, stars: 6000, tips: 2500, creator: "官方", hotness: 40000, lastActivityDate: formatDate(today) }
+            ];
+
+            let favoritesData = {
+                "默认收藏夹": [2, 4],
+                "学术论文灵感": [1],
+                "小红书文案": [3]
+            };
+            let userToUnfollowId = null;
+            let tipRecipient = null;
+            let promptToUnfavorite = { folder: null, promptId: null };
+            let promptToFavoriteId = null; 
+            const hotTagsData = [
+                { name: "学术知识综合", description: "整合多个学科知识，提供全面深入的学术见解。", color: "red" },
+                { name: "渐进式阅读", description: "逐步深入，层层解析，助你高效阅读和理解复杂文本。", color: "orange" },
+                { name: "会议概要", description: "快速提炼会议核心内容，生成精炼准确的会议纪要。", color: "amber" },
+                { name: "小红书文案", description: "创作引人注目的小红书风格文案，助力内容传播。", color: "gray" },
+                { name: "学术研究点子", description: "激发学术灵感，提供具有创新性的研究方向和课题。", color: "gray" },
+                { name: "英语学习", description: "提供多样化的英语学习场景和练习，全面提升语言能力。", color: "gray" },
+                { name: "PPT精要整理", description: "自动整理PPT内容，提炼核心要点，生成复习大纲。", color: "gray" },
+                { name: "雅思评分", description: "模拟雅思考官，对写作和口语进行专业评分和指导。", color: "gray" },
+                { name: "托福评分", description: "模拟托福考官，提供精准的写作和口语评分反馈。", color: "gray" },
+                { name: "学术句子改写", description: "润色学术论文句子，提升表达的专业性和严谨性。", color: "gray" }
+            ];
+            const promptsByTag = {
+                "学术知识综合": [1], "渐进式阅读": [2], "小红书文案": [3], "学术论文": [4], "周报生成": [5], "邮件撰写": [6], "会议纪要": [7], "述职报告": [8], "论文助手": [9], "外语学习": [10], "知识问答": [11], "代码编程": [12]
+            };
+            const scenariosData = [
+                { name: "职场办公", icon: "briefcase", items: [{name: "周报生成", icon:"file-text"}, {name: "邮件撰写", icon:"mail"}, {name:"会议纪要", icon:"users"}, {name:"述职报告", icon:"presentation"}] },
+                { name: "学习提升", icon: "graduation-cap", items: [{name: "论文助手", icon:"book-open"}, {name: "外语学习", icon:"languages"}, {name:"知识问答", icon:"help-circle"}, {name:"代码编程", icon:"code"}] },
+                { name: "生活娱乐", icon: "home", items: [{name: "旅游规划", icon:"map"}, {name: "美食菜谱", icon:"utensils-crossed"}, {name:"电影推荐", icon:"film"}, {name:"健康咨询", icon:"heart-pulse"}] },
+                { name: "创意写作", icon: "pen-tool", items: [{name: "小说续写", icon:"book-heart"}, {name: "诗歌创作", icon:"feather"}, {name:"社交媒体文案", icon:"thumbs-up"}, {name:"广告语生成", icon:"lightbulb"}] }
+            ];
+
+
+            // --- Get Elements ---
+            const getElem = (id) => document.getElementById(id);
+            const loggedOutView = getElem('logged-out-view');
+            const loggedInView = getElem('logged-in-view');
+            const openLoginModalButton = getElem('open-login-modal-button');
+            
+            const loginModal = getElem('login-modal');
+            const closeLoginModalButton = getElem('close-login-modal-button');
+            const loginModalBackdrop = getElem('login-modal-backdrop');
+            const loginForm = getElem('login-form');
+
+            const mainNav = getElem('main-nav');
+            const mainContentArea = getElem('main-content-area');
+
+            const viewAllFollowsLink = getElem('view-all-follows-link');
+            const allFollowsModal = getElem('all-follows-modal');
+            const closeAllFollowsModal = getElem('close-all-follows-modal');
+            const allFollowsBackdrop = getElem('all-follows-backdrop');
+            const allFollowsList = getElem('all-follows-list');
+            const followSearchInput = getElem('follow-search-input');
+            const followedUsersPreviewList = getElem('followed-users-preview-list');
+
+            const unfollowConfirmModal = getElem('unfollow-confirm-modal');
+            const confirmUnfollowBtn = getElem('confirm-unfollow-btn');
+            const cancelUnfollowBtn = getElem('cancel-unfollow-btn');
+            const unfollowConfirmBackdrop = getElem('unfollow-confirm-backdrop');
+            
+            const mcoinBalanceEl = getElem('mcoin-balance');
+            const transactionListEl = getElem('transaction-list');
+            const transactionTabs = getElem('transaction-tabs');
+
+            const tipModal = getElem('tip-modal');
+            const tipModalBackdrop = getElem('tip-modal-backdrop');
+            const tipRecipientName = getElem('tip-recipient-name');
+            const tipModalBalance = getElem('tip-modal-balance');
+            const customTipInput = getElem('custom-tip-input');
+            const confirmTipBtn = getElem('confirm-tip-btn');
+            const cancelTipBtn = getElem('cancel-tip-btn');
+
+            const hotTagsList = getElem('hot-tags-list');
+            const hotTagsListMain = getElem('hot-tags-list-main');
+            
+            const favoriteFoldersList = getElem('favorite-folders-list');
+            const favoritesPromptList = getElem('favorites-prompt-list');
+            const favoritesTitle = getElem('favorites-title');
+            const createFolderBtn = getElem('create-folder-btn');
+            const createFolderModal = getElem('create-folder-modal');
+            const createFolderBackdrop = getElem('create-folder-backdrop');
+            const cancelCreateFolderBtn = getElem('cancel-create-folder-btn');
+            const createFolderForm = getElem('create-folder-form');
+            const folderNameInput = getElem('folder-name-input');
+            const removeFavoriteModal = getElem('remove-favorite-modal');
+            const confirmRemoveFavoriteBtn = getElem('confirm-remove-favorite-btn');
+            const cancelRemoveFavoriteBtn = getElem('cancel-remove-favorite-btn');
+            const removeFavoriteBackdrop = getElem('remove-favorite-backdrop');
+            
+            const hotPromptsTabs = getElem('hot-prompts-tabs');
+            const hotPromptList = getElem('hot-prompt-list');
+            const commonScenariosView = getElem('common-scenarios-view');
+
+            const rechargeBtn = getElem('recharge-btn');
+            const withdrawBtn = getElem('withdraw-btn');
+            const rechargeModal = getElem('recharge-modal');
+            const withdrawModal = getElem('withdraw-modal');
+            const closeRechargeModal = getElem('close-recharge-modal');
+            const closeWithdrawModal = getElem('close-withdraw-modal');
+            const rechargeModalBackdrop = getElem('recharge-modal-backdrop');
+            const withdrawModalBackdrop = getElem('withdraw-modal-backdrop');
+            const confirmRechargeBtn = getElem('confirm-recharge-btn');
+            const confirmWithdrawBtn = getElem('confirm-withdraw-btn');
+            const customRechargeInput = getElem('custom-recharge-input');
+            const withdrawableBalance = getElem('withdrawable-balance');
+            const withdrawAmountInput = getElem('withdraw-amount-input');
+            const withdrawAllBtn = getElem('withdraw-all-btn');
+
+            const addToFavoritesModal = getElem('add-to-favorites-modal');
+            const addToFavoritesBackdrop = getElem('add-to-favorites-backdrop');
+            const closeAddToFavoritesModal = getElem('close-add-to-favorites-modal');
+            const favoriteFoldersSelectionList = getElem('favorite-folders-selection-list');
+            const newFolderNameModalInput = getElem('new-folder-name-modal-input');
+            const createFolderInModalBtn = getElem('create-folder-in-modal-btn');
+            
+            const redirectModal = getElem('redirect-modal');
+            const redirectModalBackdrop = getElem('redirect-modal-backdrop');
+            const closeRedirectModal = getElem('close-redirect-modal');
+            const redirectLlmList = getElem('redirect-llm-list');
+            let promptToRedirect = '';
+
+
+            // --- Functions ---
+            const openModal = (modal) => modal?.classList.remove('hidden');
+            const closeModal = (modal) => modal?.classList.add('hidden');
+
+            const copyToClipboard = (text, showMessage = true) => {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    if (showMessage) {
+                       alert('Prompt 已复制到剪贴板!');
+                    }
+                } catch (err) {
+                    alert('复制失败，请手动复制。');
+                }
+                document.body.removeChild(textarea);
+            };
+
+            const renderLlmLinks = (container) => {
+                if (!container) return;
+                container.innerHTML = '';
+                llmData.forEach(llm => {
+                    const link = document.createElement('a');
+                    link.href = llm.url;
+                    link.target = "_blank";
+                    link.className = "flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors";
+                    link.innerHTML = `
+                        <img src="${llm.logo}" alt="${llm.name} Logo" class="w-10 h-10 rounded-md object-cover">
+                        <span class="font-medium text-gray-700">${llm.name}</span>
+                    `;
+                    container.appendChild(link);
+                });
+            };
+            
+            const renderRedirectLlmLinks = (container) => {
+                if (!container) return;
+                container.innerHTML = '';
+                llmData.forEach(llm => {
+                    const link = document.createElement('a');
+                    link.href = '#'; // Prevent default navigation
+                    link.dataset.url = llm.url;
+                    link.className = "llm-redirect-link flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 transition-colors border";
+                    link.innerHTML = `
+                        <img src="${llm.logo}" alt="${llm.name} Logo" class="w-10 h-10 rounded-md object-cover">
+                        <span class="font-medium text-gray-700">${llm.name}</span>
+                        <i data-lucide="arrow-right" class="ml-auto text-gray-400"></i>
+                    `;
+                    container.appendChild(link);
+                });
+                lucide.createIcons();
+            };
+
+
+            const renderHotTags = (container) => {
+                if (!container) return;
+                container.innerHTML = '';
+                const colors = { red: 'text-red-500', orange: 'text-orange-500', amber: 'text-amber-500', gray: 'text-gray-400' };
+                hotTagsData.forEach((tag, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-center';
+                    const colorClass = colors[tag.color] || 'text-gray-400';
+                    li.innerHTML = `
+                        <span class="${colorClass} font-bold w-6">${index + 1}</span>
+                        <a href="#" class="hot-tag-link ${index < 3 ? 'font-semibold' : ''}" data-tag-name="${tag.name}">${tag.name}</a>
+                    `;
+                    container.appendChild(li);
+                });
+            };
+
+            const renderFollowsPreview = () => {
+                if (!followedUsersPreviewList) return;
+                followedUsersPreviewList.innerHTML = '';
+                allFollowedUsers.slice(0, 8).forEach(user => { // Show max 8 previews
+                    const userElement = document.createElement('div');
+                    userElement.className = 'flex-shrink-0 text-center w-20';
+                    userElement.innerHTML = `
+                        <img src="${user.avatar}" alt="Avatar of ${user.name}" class="w-16 h-16 rounded-full mx-auto mb-2 object-cover">
+                        <p class="text-sm font-medium text-gray-700 truncate">${user.name}</p>
+                        <button class="text-xs text-gray-400 hover:text-red-500 unfollow-preview-btn" data-user-id="${user.id}">取消关注</button>
+                    `;
+                    followedUsersPreviewList.appendChild(userElement);
+                });
+            };
+
+            const renderAllFollowsList = (users) => {
+                if (!allFollowsList) return;
+                allFollowsList.innerHTML = '';
+                users.forEach(user => {
+                    const userElement = document.createElement('div');
+                    userElement.className = 'flex items-center justify-between p-2 rounded-lg hover:bg-gray-100';
+                    userElement.dataset.userId = user.id;
+                    userElement.innerHTML = `
+                        <div class="flex items-center">
+                            <img src="${user.avatar}" alt="Avatar of ${user.name}" class="w-12 h-12 rounded-full object-cover">
+                            <div class="ml-4">
+                                <p class="font-semibold text-gray-800">${user.name}</p>
+                                <p class="text-sm text-gray-500">${user.bio}</p>
+                            </div>
+                        </div>
+                        <button class="unfollow-btn text-sm bg-gray-200 text-gray-700 px-3 py-1 rounded-full hover:bg-red-100 hover:text-red-600" data-user-id="${user.id}">取消关注</button>
+                    `;
+                    allFollowsList.appendChild(userElement);
+                });
+            };
+
+            const handleUnfollow = () => {
+                allFollowedUsers = allFollowedUsers.filter(user => user.id !== userToUnfollowId);
+                renderAllFollowsList(allFollowedUsers);
+                renderFollowsPreview();
+                closeModal(unfollowConfirmModal);
+                userToUnfollowId = null;
+            };
+
+            const renderTransactions = (filter = 'all') => {
+                if (!transactionListEl) return;
+                transactionListEl.innerHTML = '';
+                const filtered = currentUser.transactions.filter(tx => {
+                    if (filter === 'all') return true;
+                    if (filter === 'system') return tx.type === 'system';
+                    return tx.type === filter;
+                });
+
+                if (filtered.length === 0) {
+                    transactionListEl.innerHTML = '<p class="text-center text-gray-500 py-8">没有相关记录</p>';
+                    return;
+                }
+
+                filtered.forEach(tx => {
+                    const el = document.createElement('div');
+                    el.className = 'flex justify-between items-center p-3 rounded-lg hover:bg-gray-50';
+                    
+                    let iconHtml = '';
+                    let amountClass = '';
+                    let amountSign = '';
+
+                    switch(tx.type) {
+                        case 'income':
+                            iconHtml = '<i data-lucide="arrow-down-left" class="w-8 h-8 p-2 bg-green-100 text-green-600 rounded-full"></i>';
+                            amountClass = 'text-green-600';
+                            amountSign = '+';
+                            break;
+                        case 'expense':
+                             iconHtml = '<i data-lucide="arrow-up-right" class="w-8 h-8 p-2 bg-red-100 text-red-600 rounded-full"></i>';
+                            amountClass = 'text-red-600';
+                            amountSign = '-';
+                            break;
+                        case 'system':
+                        default:
+                            iconHtml = '<i data-lucide="settings" class="w-8 h-8 p-2 bg-gray-100 text-gray-600 rounded-full"></i>';
+                            amountClass = 'text-gray-800';
+                            amountSign = tx.description.includes('充值') ? '+' : '-';
+                            break;
+                    }
+                    
+                    let description = tx.from || tx.to || tx.description;
+
+                    el.innerHTML = `
+                        <div class="flex items-center space-x-4">
+                            ${iconHtml}
+                            <div>
+                                <p class="font-semibold">${description}</p>
+                                <p class="text-sm text-gray-400">${tx.date}</p>
+                            </div>
+                        </div>
+                        <p class="font-bold text-lg ${amountClass}">${amountSign}${tx.amount.toLocaleString()} M币</p>
+                    `;
+                    transactionListEl.appendChild(el);
+                });
+                lucide.createIcons();
+            };
+
+            const updateBalance = () => {
+                if(mcoinBalanceEl) mcoinBalanceEl.textContent = currentUser.balance.toLocaleString();
+                if(withdrawableBalance) withdrawableBalance.textContent = currentUser.balance.toLocaleString();
+            };
+
+            const renderFavoritePrompts = (folderName) => {
+                if (!favoritesPromptList || !favoritesTitle) return;
+                favoritesTitle.textContent = folderName;
+                favoritesPromptList.innerHTML = '';
+                const promptIds = favoritesData[folderName] || [];
+                if (promptIds.length === 0) {
+                    favoritesPromptList.innerHTML = '<p class="text-center text-gray-500 py-8">这个收藏夹是空的</p>';
+                    return;
+                }
+                promptIds.forEach(id => {
+                    const p = allPromptsData.find(prompt => prompt.id === id);
+                    if (!p) return;
+                    const creator = allFollowedUsers.find(u => u.name === p.creator) || { name: '官方', avatar: 'https://placehold.co/48x48/cccccc/ffffff?text=P', level: '认证作者', levelClass: 'bg-blue-500 text-white' };
+                    const card = document.createElement('div');
+                    card.className = 'prompt-card rounded-xl p-6';
+                    card.dataset.promptId = p.id;
+                    card.innerHTML = `
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center">
+                                <img src="${creator.avatar}" alt="User Avatar" class="w-12 h-12 rounded-full object-cover">
+                                <div class="ml-3">
+                                    <p class="font-semibold text-gray-800">${p.creator}</p>
+                                    <span class="text-xs ${creator.levelClass} font-bold px-2 py-0.5 rounded">${creator.level}</span>
+                                </div>
+                            </div>
+                            <button class="remove-favorite-btn text-red-500 hover:text-red-700" data-prompt-id="${p.id}" data-folder-name="${folderName}">
+                                <i data-lucide="trash-2" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                        <div class="mb-4">
+                            <h3 class="text-lg mb-2 prompt-title">PROMPT</h3>
+                            <div class="prompt-text-container bg-gray-50 p-4 rounded-lg"><p class="text-gray-600 leading-relaxed whitespace-pre-wrap">${p.prompt}</p></div>
+                        </div>
+                        <div class="border-t mt-6 pt-4 flex justify-between items-center text-gray-500">
+                            <div class="flex space-x-5">
+                                <button class="action-btn flex items-center space-x-1"><i data-lucide="thumbs-up" class="w-5 h-5"></i> <span>${p.likes}</span></button>
+                                <button class="action-btn flex items-center space-x-1"><i data-lucide="message-square" class="w-5 h-5"></i> <span>${p.comments}</span></button>
+                                <button class="action-btn flex items-center space-x-1"><i data-lucide="star" class="w-5 h-5"></i> <span>${p.stars}</span></button>
+                                <button class="action-btn flex items-center space-x-1 tip-btn" data-creator="${p.creator}"><i data-lucide="gem" class="w-5 h-5"></i> <span>${p.tips || 0}</span></button>
+                            </div>
+                            <button class="redirect-btn action-btn flex items-center space-x-1"><i data-lucide="external-link" class="w-5 h-5"></i><span>跳转</span></button>
+                        </div>`;
+                    favoritesPromptList.appendChild(card);
+                });
+                updateAllStarIcons();
+                lucide.createIcons();
+            };
+
+            const renderFavoriteFolders = () => {
+                if (!favoriteFoldersList) return;
+                favoriteFoldersList.innerHTML = '';
+                Object.keys(favoritesData).forEach((folderName, index) => {
+                    const folderItem = document.createElement('a');
+                    folderItem.href = '#';
+                    folderItem.className = `folder-item flex justify-between items-center p-2 rounded-lg`;
+                    folderItem.dataset.folderName = folderName;
+                    folderItem.innerHTML = `
+                        <span>${folderName}</span>
+                        <span class="text-sm text-gray-500">${favoritesData[folderName].length}</span>
+                    `;
+                    favoriteFoldersList.appendChild(folderItem);
+                });
+                 // Make the first folder active by default if it exists
+                const firstFolder = favoriteFoldersList.querySelector('.folder-item');
+                if(firstFolder) firstFolder.classList.add('active');
+            };
+
+            const handleRemoveFavorite = () => {
+                const { folder, promptId } = promptToUnfavorite;
+                if (folder && promptId) {
+                    favoritesData[folder] = favoritesData[folder].filter(id => id !== promptId);
+                    // If the folder becomes empty and it's not the default one, delete it.
+                    if (favoritesData[folder].length === 0 && folder !== "默认收藏夹") {
+                        delete favoritesData[folder];
+                    }
+                    renderFavoriteFolders();
+                    // Check if the current view is the favorites view and the deleted folder was active
+                    const favoritesView = getElem('my-favorites-view');
+                    if (!favoritesView.classList.contains('hidden')) {
+                        const activeFolderEl = favoriteFoldersList.querySelector('.active');
+                        // If the active folder was the one deleted, switch to the first available folder
+                        if (!activeFolderEl) {
+                            const firstFolder = Object.keys(favoritesData)[0];
+                            if (firstFolder) {
+                                renderFavoritePrompts(firstFolder);
+                                const newActiveEl = favoriteFoldersList.querySelector(`[data-folder-name="${firstFolder}"]`);
+                                newActiveEl?.classList.add('active');
+                            } else { // No folders left
+                                favoritesPromptList.innerHTML = '<p class="text-center text-gray-500 py-8">没有收藏夹了</p>';
+                                favoritesTitle.textContent = '';
+                            }
+                        } else {
+                            renderFavoritePrompts(activeFolderEl.dataset.folderName);
+                        }
+                    }
+                }
+                closeModal(removeFavoriteModal);
+                updateAllStarIcons();
+            };
+            
+            const renderTagDetailPage = (tagName) => {
+                const tagData = hotTagsData.find(t => t.name === tagName) || scenariosData.flatMap(s => s.items).find(i => i.name === tagName);
+                const promptIds = promptsByTag[tagName] || [];
+                
+                getElem('tag-detail-title').textContent = `#${tagName}`;
+                getElem('tag-detail-desc').textContent = tagData?.description || '探索这个标签下的精彩内容。';
+                
+                const promptListContainer = getElem('tag-prompt-list');
+                promptListContainer.innerHTML = '';
+
+                if (promptIds.length === 0) {
+                    promptListContainer.innerHTML = '<p class="text-center text-gray-500 py-8">这个标签下还没有Prompt</p>';
+                    return;
+                }
+
+                promptIds.forEach(id => {
+                    const p = allPromptsData.find(prompt => prompt.id === id);
+                    if (!p) return;
+                    const creator = allFollowedUsers.find(u => u.name === p.creator) || { name: '官方', avatar: 'https://placehold.co/48x48/cccccc/ffffff?text=P', level: '认证作者', levelClass: 'bg-blue-500 text-white' };
+                    const card = document.createElement('div');
+                    card.className = 'prompt-card rounded-xl p-6';
+                    card.dataset.promptId = p.id;
+                    card.innerHTML = `
+                        <div class="flex items-center mb-4">
+                            <img src="${creator.avatar}" alt="User Avatar" class="w-12 h-12 rounded-full object-cover">
+                            <div class="ml-3">
+                                <p class="font-semibold text-gray-800">${p.creator}</p>
+                                <span class="text-xs ${creator.levelClass} font-bold px-2 py-0.5 rounded">${creator.level}</span>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <h3 class="text-lg mb-2 prompt-title">PROMPT</h3>
+                            <div class="prompt-text-container bg-gray-50 p-4 rounded-lg"><p class="text-gray-600 leading-relaxed whitespace-pre-wrap">${p.prompt}</p></div>
+                        </div>
+                        <div class="border-t mt-6 pt-4 flex justify-between items-center text-gray-500">
+                            <div class="flex space-x-5">
+                                <button class="action-btn flex items-center space-x-1"><i data-lucide="thumbs-up" class="w-5 h-5"></i> <span>${p.likes}</span></button>
+                                <button class="action-btn flex items-center space-x-1"><i data-lucide="message-square" class="w-5 h-5"></i> <span>${p.comments}</span></button>
+                                <button class="action-btn flex items-center space-x-1"><i data-lucide="star" class="w-5 h-5"></i> <span>${p.stars}</span></button>
+                            </div>
+                            <button class="redirect-btn action-btn flex items-center space-x-1"><i data-lucide="external-link" class="w-5 h-5"></i><span>跳转</span></button>
+                        </div>
+                    `;
+                    promptListContainer.appendChild(card);
+                });
+                updateAllStarIcons();
+                lucide.createIcons();
+            };
+            
+            // --- MODIFICATION: Reworked renderHotPrompts function ---
+            const renderHotPrompts = (period = 'today') => {
+                if (!hotPromptList) return;
+                hotPromptList.innerHTML = '';
+
+                const todayStr = formatDate(new Date());
+                const weekAgo = new Date();
+                weekAgo.setDate(weekAgo.getDate() - 7);
+
+                let promptsToRender;
+
+                switch (period) {
+                    case 'today':
+                        promptsToRender = allPromptsData.filter(p => p.lastActivityDate === todayStr);
+                        break;
+                    case 'week':
+                        promptsToRender = allPromptsData.filter(p => new Date(p.lastActivityDate) >= weekAgo);
+                        break;
+                    case 'all':
+                    default:
+                        promptsToRender = [...allPromptsData];
+                        break;
+                }
+
+                const sortedPrompts = promptsToRender.sort((a, b) => b.hotness - a.hotness);
+                
+                if (sortedPrompts.length === 0) {
+                    hotPromptList.innerHTML = `<p class="text-center text-gray-500 py-12">此时间段内没有热门Prompt。</p>`;
+                    return;
+                }
+
+                const rankColors = ['text-yellow-400', 'text-gray-400', 'text-yellow-600'];
+
+                sortedPrompts.forEach((p, index) => {
+                    const creator = allFollowedUsers.find(u => u.name === p.creator) || { name: '官方', avatar: 'https://placehold.co/48x48/cccccc/ffffff?text=P', level: '认证作者', levelClass: 'bg-blue-500 text-white' };
+                    const card = document.createElement('div');
+                    card.className = 'flex items-start space-x-4';
+                    card.dataset.promptId = p.id;
+                    
+                    const rankIcon = index < 3 
+                        ? `<i data-lucide="crown" class="w-6 h-6 ${rankColors[index]}"></i>` 
+                        : `<span class="text-lg font-bold text-gray-500 w-6 text-center">${index + 1}</span>`;
+                    
+                    // Always display the total hotness
+                    const hotnessValue = p.hotness;
+
+                    card.innerHTML = `
+                        <div class="text-center w-12 flex-shrink-0 pt-1">
+                            ${rankIcon}
+                            <p class="text-xs text-gray-400 mt-1">${hotnessValue.toLocaleString()} 热度</p>
+                        </div>
+                        <div class="prompt-card rounded-xl p-6 flex-grow">
+                            <div class="flex items-center mb-4">
+                                <img src="${creator.avatar}" alt="User Avatar" class="w-12 h-12 rounded-full object-cover">
+                                <div class="ml-3">
+                                    <p class="font-semibold text-gray-800">${p.creator}</p>
+                                    <span class="text-xs ${creator.levelClass} font-bold px-2 py-0.5 rounded">${creator.level}</span>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <h3 class="text-lg mb-2 prompt-title">PROMPT</h3>
+                                <div class="prompt-text-container bg-gray-50 p-4 rounded-lg"><p class="text-gray-600 leading-relaxed whitespace-pre-wrap">${p.prompt}</p></div>
+                            </div>
+                            <div class="border-t mt-6 pt-4 flex justify-between items-center text-gray-500">
+                                <div class="flex space-x-5">
+                                    <button class="action-btn flex items-center space-x-1"><i data-lucide="thumbs-up" class="w-5 h-5"></i> <span>${p.likes}</span></button>
+                                    <button class="action-btn flex items-center space-x-1"><i data-lucide="message-square" class="w-5 h-5"></i> <span>${p.comments}</span></button>
+                                    <button class="action-btn flex items-center space-x-1"><i data-lucide="star" class="w-5 h-5"></i> <span>${p.stars}</span></button>
+                                    <button class="action-btn flex items-center space-x-1 tip-btn" data-creator="${p.creator}"><i data-lucide="gem" class="w-5 h-5"></i> <span>${p.tips || 0}</span></button>
+                                </div>
+                                <button class="redirect-btn action-btn flex items-center space-x-1"><i data-lucide="external-link" class="w-5 h-5"></i><span>跳转</span></button>
+                            </div>
+                        </div>
+                    `;
+                    hotPromptList.appendChild(card);
+                });
+                updateAllStarIcons();
+                lucide.createIcons();
+            };
+
+             const renderScenarios = () => {
+                if (!commonScenariosView) return;
+                commonScenariosView.innerHTML = '';
+                scenariosData.forEach(category => {
+                    const categoryEl = document.createElement('div');
+                    categoryEl.className = 'bg-white rounded-xl shadow-sm p-6';
+                    let itemsHtml = '<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">';
+                    category.items.forEach(item => {
+                        itemsHtml += `
+                            <a href="#" class="scenario-item-link text-center p-4 rounded-lg hover:bg-gray-100" data-tag-name="${item.name}">
+                                <div class="bg-blue-100 text-blue-600 w-16 h-16 mx-auto rounded-full flex items-center justify-center">
+                                    <i data-lucide="${item.icon}" class="w-8 h-8"></i>
+                                </div>
+                                <p class="mt-2 font-semibold text-gray-700">${item.name}</p>
+                            </a>
+                        `;
+                    });
+                    itemsHtml += '</div>';
+
+                    categoryEl.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <i data-lucide="${category.icon}" class="w-6 h-6 text-blue-600"></i>
+                            <h3 class="text-xl font-bold text-gray-800">${category.name}</h3>
+                        </div>
+                        ${itemsHtml}
+                    `;
+                    commonScenariosView.appendChild(categoryEl);
+                });
+                lucide.createIcons();
+            };
+
+            const updateAllStarIcons = () => {
+                document.querySelectorAll('[data-prompt-id]').forEach(card => {
+                    const promptId = parseInt(card.dataset.promptId);
+                    if (!promptId) return;
+
+                    const isFavorited = Object.values(favoritesData).some(arr => arr.includes(promptId));
+                    // This selector works both before and after lucide runs
+                    const starButton = card.querySelector('.lucide-star, i[data-lucide="star"]')?.closest('.action-btn');
+                    
+                    if (starButton) {
+                        if (isFavorited) {
+                            starButton.classList.add('active');
+                        } else {
+                            starButton.classList.remove('active');
+                        }
+                    }
+                });
+            };
+            
+            const renderAddToFavoritesModal = () => {
+                if (!favoriteFoldersSelectionList) return;
+                favoriteFoldersSelectionList.innerHTML = '';
+                Object.keys(favoritesData).forEach(folderName => {
+                    const button = document.createElement('button');
+                    button.className = 'w-full text-left p-3 bg-gray-100 rounded-lg hover:bg-blue-100 hover:text-blue-700';
+                    button.textContent = folderName;
+                    button.dataset.folderName = folderName;
+                    favoriteFoldersSelectionList.appendChild(button);
+                });
+            };
+
+            const handleAddToFavorites = (folderName, promptId) => {
+                if (!promptId || !folderName) return;
+
+                if (!favoritesData[folderName]) {
+                    favoritesData[folderName] = [];
+                }
+
+                // Prevent duplicates in the same folder
+                if (favoritesData[folderName].includes(promptId)) {
+                    alert(`该Prompt已在 "${folderName}" 中。`);
+                    return;
+                }
+                
+                // Remove from any other folder first (ensures a prompt is only in one folder)
+                Object.keys(favoritesData).forEach(key => {
+                    favoritesData[key] = favoritesData[key].filter(id => id !== promptId);
+                });
+
+                // Add to the new folder
+                favoritesData[folderName].push(promptId);
+                alert(`成功收藏到 "${folderName}"!`);
+                
+                closeModal(addToFavoritesModal);
+                updateAllStarIcons();
+                
+                if (!getElem('my-favorites-view').classList.contains('hidden')) {
+                    renderFavoriteFolders();
+                    const activeFolderEl = getElem('favorite-folders-list').querySelector('.active');
+                    if (activeFolderEl) {
+                       renderFavoritePrompts(activeFolderEl.dataset.folderName);
+                    }
+                }
+            };
+
+
+            const switchView = (activeNav, activeView) => {
+                mainContentArea.querySelectorAll(':scope > div').forEach(view => view.classList.add('hidden'));
+                mainNav.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+                
+                activeView?.classList.remove('hidden');
+                activeNav?.classList.add('active');
+                
+                if (activeView === getElem('my-mcoins-view')) {
+                    updateBalance();
+                    renderTransactions();
+                } else if (activeView === getElem('my-follows-view')) {
+                    renderFollowsPreview();
+                } else if (activeView === getElem('my-favorites-view')) {
+                    renderFavoriteFolders();
+                    const firstFolder = Object.keys(favoritesData)[0] || '默认收藏夹';
+                    renderFavoritePrompts(firstFolder);
+                } else if (activeView === getElem('hot-prompts-view')) {
+                    renderHotPrompts('today'); // Default to today's hot prompts
+                } else if (activeView === getElem('common-scenarios-view')) {
+                    renderScenarios();
+                }
+                updateAllStarIcons();
+                lucide.createIcons();
+            };
+            
+            // --- Event Listeners ---
+
+            // MODIFICATION: Re-structured the main click listener for robustness
+            document.body.addEventListener('click', (e) => {
+                const actionBtn = e.target.closest('.action-btn');
+                const tipBtn = e.target.closest('.tip-btn');
+                const unfollowPreviewBtn = e.target.closest('.unfollow-preview-btn');
+                const unfollowBtn = e.target.closest('.unfollow-btn');
+                const hotTagLink = e.target.closest('.hot-tag-link');
+                const removeFavoriteBtn = e.target.closest('.remove-favorite-btn');
+                const folderItem = e.target.closest('.folder-item');
+                const scenarioLink = e.target.closest('.scenario-item-link');
+                const redirectBtn = e.target.closest('.redirect-btn');
+
+                // --- Card Action Buttons (Like, Comment, Favorite) ---
+                if (actionBtn && !tipBtn && !redirectBtn) { // Exclude tip and redirect buttons which are also action-btns
+                    const card = actionBtn.closest('[data-prompt-id]');
+                    
+                    // Robust selector that works before and after lucide runs
+                    const isFavoriteBtn = actionBtn.querySelector('.lucide-star, i[data-lucide="star"]');
+                    const isLikeBtn = actionBtn.querySelector('.lucide-thumbs-up, i[data-lucide="thumbs-up"]');
+                    const isCommentBtn = actionBtn.querySelector('.lucide-message-square, i[data-lucide="message-square"]');
+
+                    if (isFavoriteBtn) {
+                        if (!card) return;
+                        const promptId = parseInt(card.dataset.promptId, 10);
+                        const isFavorited = Object.values(favoritesData).some(arr => arr.includes(promptId));
+
+                        if (isFavorited) {
+                            let folderToRemoveFrom = '';
+                            for (const folder in favoritesData) {
+                                if (favoritesData[folder].includes(promptId)) {
+                                    folderToRemoveFrom = folder;
+                                    break;
+                                }
+                            }
+                            promptToUnfavorite = { folder: folderToRemoveFrom, promptId: promptId };
+                            handleRemoveFavorite();
+                            alert('已取消收藏!');
+                        } else {
+                            promptToFavoriteId = promptId;
+                            renderAddToFavoritesModal();
+                            openModal(addToFavoritesModal);
+                        }
+                        return;
+                    }
+
+                    if (isLikeBtn) {
+                        actionBtn.classList.toggle('active');
+                        const countSpan = actionBtn.querySelector('span');
+                        if (countSpan) {
+                            let currentCountStr = countSpan.textContent.replace('k', '000');
+                            let currentCount = parseFloat(currentCountStr);
+                            if (isNaN(currentCount)) currentCount = 0;
+
+                            currentCount += actionBtn.classList.contains('active') ? 1 : -1;
+                            
+                            if (currentCount > 999) {
+                                countSpan.textContent = (currentCount / 1000).toFixed(1).replace('.0', '') + 'k';
+                            } else {
+                                countSpan.textContent = Math.round(currentCount);
+                            }
+                        }
+                        return;
+                    }
+
+                    if (isCommentBtn) {
+                        openModal(getElem('comment-modal'));
+                        return;
+                    }
+                }
+
+                // --- Other Click Handlers ---
+                if (redirectBtn) {
+                    const card = redirectBtn.closest('[data-prompt-id]');
+                    const promptTextContainer = card?.querySelector('.prompt-text-container');
+                    if (promptTextContainer) {
+                        promptToRedirect = promptTextContainer.innerText;
+                        renderRedirectLlmLinks(redirectLlmList);
+                        openModal(redirectModal);
+                    }
+                    return;
+                }
+                if (tipBtn) {
+                    e.stopPropagation(); 
+                    tipRecipient = tipBtn.dataset.creator;
+                    tipRecipientName.textContent = tipRecipient;
+                    tipModalBalance.textContent = currentUser.balance.toLocaleString();
+                    customTipInput.value = '';
+                    openModal(tipModal);
+                }
+                if (unfollowPreviewBtn) {
+                    userToUnfollowId = parseInt(unfollowPreviewBtn.dataset.userId);
+                    openModal(unfollowConfirmModal);
+                }
+                if (unfollowBtn) {
+                    userToUnfollowId = parseInt(unfollowBtn.dataset.userId);
+                    openModal(unfollowConfirmModal);
+                }
+                if (hotTagLink) {
+                    e.preventDefault();
+                    const tagName = hotTagLink.dataset.tagName;
+                    renderTagDetailPage(tagName);
+                    switchView(null, getElem('tag-detail-view'));
+                    mainNav.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+                }
+                if (scenarioLink) {
+                    e.preventDefault();
+                    const tagName = scenarioLink.dataset.tagName;
+                    renderTagDetailPage(tagName);
+                    switchView(getElem('nav-scenarios'), getElem('tag-detail-view'));
+                }
+                if (removeFavoriteBtn) {
+                    promptToUnfavorite.promptId = parseInt(removeFavoriteBtn.dataset.promptId);
+                    promptToUnfavorite.folder = removeFavoriteBtn.dataset.folderName;
+                    openModal(removeFavoriteModal);
+                }
+                if (folderItem) {
+                    e.preventDefault();
+                    favoriteFoldersList.querySelector('.active')?.classList.remove('active');
+                    folderItem.classList.add('active');
+                    renderFavoritePrompts(folderItem.dataset.folderName);
+                }
+            });
+
+            openLoginModalButton?.addEventListener('click', () => openModal(loginModal));
+            closeLoginModalButton?.addEventListener('click', () => closeModal(loginModal));
+            loginModalBackdrop?.addEventListener('click', () => closeModal(loginModal));
+            loginForm?.addEventListener('submit', (event) => {
+                event.preventDefault(); 
+                closeModal(loginModal);
+                loggedOutView?.classList.add('hidden');
+                loggedInView?.classList.remove('hidden');
+                switchView(getElem('nav-home'), getElem('home-content-view'));
+            });
+
+            viewAllFollowsLink?.addEventListener('click', (e) => {
+                e.preventDefault();
+                renderAllFollowsList(allFollowedUsers);
+                openModal(allFollowsModal);
+                lucide.createIcons();
+            });
+
+            closeAllFollowsModal?.addEventListener('click', () => closeModal(allFollowsModal));
+            allFollowsBackdrop?.addEventListener('click', () => closeModal(allFollowsModal));
+            
+            followSearchInput?.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const filteredUsers = allFollowedUsers.filter(user => user.name.toLowerCase().includes(searchTerm) || user.bio.toLowerCase().includes(searchTerm));
+                renderAllFollowsList(filteredUsers);
+            });
+
+            confirmUnfollowBtn?.addEventListener('click', handleUnfollow);
+            cancelUnfollowBtn?.addEventListener('click', () => closeModal(unfollowConfirmModal));
+            unfollowConfirmBackdrop?.addEventListener('click', () => closeModal(unfollowConfirmModal));
+
+            transactionTabs?.addEventListener('click', (e) => {
+                if (e.target.classList.contains('tab-item')) {
+                    transactionTabs.querySelector('.active').classList.remove('active');
+                    e.target.classList.add('active');
+                    renderTransactions(e.target.dataset.filter);
+                }
+            });
+
+            tipModal?.addEventListener('click', (e) => {
+                if(e.target.classList.contains('tip-amount-btn')) {
+                    const amount = parseInt(e.target.dataset.amount);
+                    customTipInput.value = amount;
+                }
+            });
+            
+            cancelTipBtn?.addEventListener('click', () => closeModal(tipModal));
+            tipModalBackdrop?.addEventListener('click', () => closeModal(tipModal));
+            confirmTipBtn?.addEventListener('click', () => {
+                const amount = parseInt(customTipInput.value);
+                if (amount > 0 && currentUser.balance >= amount) {
+                    currentUser.balance -= amount;
+                    currentUser.transactions.unshift({ type: 'expense', to: `打赏给 ${tipRecipient}`, amount: amount, date: new Date().toISOString().slice(0, 16).replace('T', ' ') });
+                    updateBalance();
+                    renderTransactions();
+                    alert(`成功打赏 ${amount} M币给 ${tipRecipient}!`);
+                    closeModal(tipModal);
+                } else {
+                    alert('余额不足或金额无效！');
+                }
+            });
+            
+            createFolderBtn?.addEventListener('click', () => openModal(createFolderModal));
+            cancelCreateFolderBtn?.addEventListener('click', () => closeModal(createFolderModal));
+            createFolderBackdrop?.addEventListener('click', () => closeModal(createFolderModal));
+            createFolderForm?.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const newFolderName = folderNameInput.value.trim();
+                if (newFolderName && !favoritesData[newFolderName]) {
+                    favoritesData[newFolderName] = [];
+                    renderFavoriteFolders();
+                    folderNameInput.value = '';
+                    closeModal(createFolderModal);
+                } else {
+                    alert('收藏夹名称不能为空或已存在！');
+                }
+            });
+
+            confirmRemoveFavoriteBtn?.addEventListener('click', handleRemoveFavorite);
+            cancelRemoveFavoriteBtn?.addEventListener('click', () => closeModal(removeFavoriteModal));
+            removeFavoriteBackdrop?.addEventListener('click', () => closeModal(removeFavoriteModal));
+            
+            hotPromptsTabs?.addEventListener('click', (e) => {
+                if (e.target.classList.contains('hot-tab-item')) {
+                    hotPromptsTabs.querySelector('.active').classList.remove('active');
+                    e.target.classList.add('active');
+                    renderHotPrompts(e.target.dataset.period);
+                }
+            });
+
+            rechargeBtn?.addEventListener('click', () => openModal(rechargeModal));
+            withdrawBtn?.addEventListener('click', () => {
+                updateBalance();
+                openModal(withdrawModal);
+            });
+            closeRechargeModal?.addEventListener('click', () => closeModal(rechargeModal));
+            closeWithdrawModal?.addEventListener('click', () => closeModal(withdrawModal));
+            rechargeModalBackdrop?.addEventListener('click', () => closeModal(rechargeModal));
+            withdrawModalBackdrop?.addEventListener('click', () => closeModal(withdrawModal));
+            
+            rechargeModal.querySelectorAll('.recharge-amount-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    customRechargeInput.value = btn.dataset.amount;
+                });
+            });
+
+            confirmRechargeBtn?.addEventListener('click', () => {
+                const amount = parseInt(customRechargeInput.value);
+                if (amount > 0) {
+                    currentUser.balance += amount;
+                    currentUser.transactions.unshift({ type: 'system', description: '系统充值', amount: amount, date: new Date().toISOString().slice(0, 16).replace('T', ' ') });
+                    updateBalance();
+                    renderTransactions();
+                    alert(`成功充值 ${amount} M币!`);
+                    closeModal(rechargeModal);
+                } else {
+                    alert('请输入有效的充值金额！');
+                }
+            });
+
+            withdrawAllBtn?.addEventListener('click', () => {
+                withdrawAmountInput.value = currentUser.balance;
+            });
+
+            confirmWithdrawBtn?.addEventListener('click', () => {
+                const amount = parseInt(withdrawAmountInput.value);
+                if (amount > 0 && amount <= currentUser.balance) {
+                    currentUser.balance -= amount;
+                    currentUser.transactions.unshift({ type: 'system', description: 'M币提现', amount: amount, date: new Date().toISOString().slice(0, 16).replace('T', ' ') });
+                    updateBalance();
+                    renderTransactions();
+                    alert(`成功提现 ${amount} M币!`);
+                    closeModal(withdrawModal);
+                } else {
+                    alert('提现金额无效或余额不足！');
+                }
+            });
+
+            // "Add to Favorites" modal listeners
+            closeAddToFavoritesModal?.addEventListener('click', () => closeModal(addToFavoritesModal));
+            addToFavoritesBackdrop?.addEventListener('click', () => closeModal(addToFavoritesModal));
+            
+            favoriteFoldersSelectionList?.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    const folderName = e.target.dataset.folderName;
+                    handleAddToFavorites(folderName, promptToFavoriteId);
+                }
+            });
+
+            createFolderInModalBtn?.addEventListener('click', () => {
+                const newFolderName = newFolderNameModalInput.value.trim();
+                if (newFolderName && !favoritesData[newFolderName]) {
+                    favoritesData[newFolderName] = [];
+                    handleAddToFavorites(newFolderName, promptToFavoriteId);
+                    newFolderNameModalInput.value = '';
+                } else {
+                    alert('收藏夹名称不能为空或已存在！');
+                }
+            });
+
+            // Redirect modal listeners
+            closeRedirectModal?.addEventListener('click', () => closeModal(redirectModal));
+            redirectModalBackdrop?.addEventListener('click', () => closeModal(redirectModal));
+            redirectLlmList?.addEventListener('click', (e) => {
+                const link = e.target.closest('.llm-redirect-link');
+                if (link) {
+                    e.preventDefault();
+                    copyToClipboard(promptToRedirect, false); // Copy without showing alert
+                    alert('Prompt已复制，即将跳转...');
+                    window.open(link.dataset.url, '_blank');
+                    closeModal(redirectModal);
+                }
+            });
+
+            // Comment modal listeners
+            const commentModal = getElem('comment-modal');
+            const cancelCommentBtn = getElem('cancel-comment-btn');
+            const commentForm = getElem('comment-form');
+            const commentModalBackdrop = getElem('comment-modal-backdrop');
+            cancelCommentBtn?.addEventListener('click', () => closeModal(commentModal));
+            commentModalBackdrop?.addEventListener('click', () => closeModal(commentModal));
+            commentForm?.addEventListener('submit', (e) => {
+                e.preventDefault();
+                alert('评论已发表!');
+                getElem('comment-input').value = '';
+                closeModal(commentModal);
+            });
+
+
+            // Navigation
+            getElem('nav-home')?.addEventListener('click', (e) => { e.preventDefault(); switchView(getElem('nav-home'), getElem('home-content-view')); });
+            getElem('nav-follows')?.addEventListener('click', (e) => { e.preventDefault(); switchView(getElem('nav-follows'), getElem('my-follows-view')); });
+            getElem('nav-mcoins')?.addEventListener('click', (e) => { e.preventDefault(); switchView(getElem('nav-mcoins'), getElem('my-mcoins-view')); });
+            getElem('nav-favorites')?.addEventListener('click', (e) => { e.preventDefault(); switchView(getElem('nav-favorites'), getElem('my-favorites-view')); });
+            getElem('nav-hot-prompts')?.addEventListener('click', (e) => { e.preventDefault(); switchView(getElem('nav-hot-prompts'), getElem('hot-prompts-view')); });
+            getElem('nav-scenarios')?.addEventListener('click', (e) => { e.preventDefault(); switchView(getElem('nav-scenarios'), getElem('common-scenarios-view')); });
+
+            // Initialization
+            renderLlmLinks(getElem('llm-links-logged-out'));
+            renderHotTags(hotTagsList);
+            renderHotTags(hotTagsListMain);
+            renderFollowsPreview();
+            updateAllStarIcons();
+        };
+    </script>
+
+</body>
+</html>
